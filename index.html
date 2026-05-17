@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Summer Scott — Graphic Design portfolio, OCAD University."
+    />
+    <title>Summer Scott — Graphic Design</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar" aria-label="Site information">
+        <div class="sidebar__intro">
+          <h1 class="sidebar__name">
+            <span class="sidebar__name-line">Summer</span>
+            <span class="sidebar__name-line">Scott</span>
+          </h1>
+          <p class="sidebar__role">Graphic Designer</p>
+        </div>
+
+        <img
+          class="sidebar__photo"
+          src="assets/profile_picture.jpeg"
+          alt="Portrait of Summer Scott"
+          width="200"
+          height="200"
+          onerror="this.onerror=null;this.src='assets/profile-placeholder.svg';"
+        />
+
+        <div class="sidebar__info">
+          <section class="sidebar__contact">
+            <h2 class="sidebar__heading">CONTACT</h2>
+            <p class="sidebar__text">
+              <a href="mailto:summerjkscott@gmail.com">summerjkscott@gmail.com</a>
+            </p>
+          </section>
+          <section>
+            <h2 class="sidebar__heading">ABOUT</h2>
+            <p class="sidebar__text">
+              Hi! I'm Summer Scott, welcome to my in-progress portfolio as a
+              fourth-year Graphic Design student at OCAD University in downtown
+              Toronto!
+            </p>
+          </section>
+        </div>
+
+        <nav class="nav" aria-label="Portfolio categories"></nav>
+      </aside>
+
+      <main id="main" class="main" tabindex="-1"></main>
+    </div>
+
+    <script src="js/data.js" defer></script>
+    <script src="js/media-render.js" defer></script>
+    <script src="js/lightbox.js" defer></script>
+    <script src="js/carousel.js" defer></script>
+    <script src="js/app.js" defer></script>
+  </body>
+</html>
