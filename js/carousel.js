@@ -1,4 +1,4 @@
-function renderCarouselMarkup(categorySlug, project, variant) {
+function renderCarouselMarkup(categorySlug, project, variant, options = {}) {
   if (!project.media || project.media.length === 0) {
     return `<div class="carousel carousel--${variant} carousel--empty">No media uploaded yet</div>`;
   }
@@ -18,8 +18,11 @@ function renderCarouselMarkup(categorySlug, project, variant) {
     .join("");
 
   const total = project.media.length;
+  const hintText = project.carouselLoop
+    ? "Auto-playing · Click to enlarge"
+    : "Click to enlarge";
   const hint =
-    total > 0 ? `<span class="carousel__hint">Click to enlarge</span>` : "";
+    total > 0 ? `<span class="carousel__hint">${hintText}</span>` : "";
   const controls =
     total > 1
       ? `<div class="carousel__controls">
@@ -28,12 +31,20 @@ function renderCarouselMarkup(categorySlug, project, variant) {
       </div>`
       : "";
 
+  const galleryAttrs = options.gallery
+    ? `data-gallery="true" data-gallery-index="${options.galleryIndex}"`
+    : "";
+  const loopAttr = project.carouselLoop ? `data-carousel-loop="true"` : "";
+  const loopClass = project.carouselLoop ? " carousel--loop" : "";
+
   return `
     <div
-      class="carousel carousel--${variant}"
+      class="carousel carousel--${variant}${loopClass}"
       data-carousel
       data-category-slug="${categorySlug}"
       data-project-slug="${project.slug}"
+      ${galleryAttrs}
+      ${loopAttr}
       data-total="${total}"
       tabindex="0"
       role="region"
@@ -55,14 +66,29 @@ function initCarousels(root) {
 
     const categorySlug = carousel.dataset.categorySlug;
     const projectSlug = carousel.dataset.projectSlug;
-    const match = findProject(categorySlug, projectSlug);
-    const lightboxItems = match ? buildLightboxItems(categorySlug, match.project) : [];
+    const isGallery = carousel.dataset.gallery === "true";
+    const galleryIndex = Number(carousel.dataset.galleryIndex) || 0;
+    let lightboxItems = [];
+
+    if (isGallery) {
+      const category = findCategory(categorySlug);
+      lightboxItems = category ? buildGalleryLightboxItems(category) : [];
+    } else {
+      const match = findProject(categorySlug, projectSlug);
+      lightboxItems = match ? buildLightboxItems(categorySlug, match.project) : [];
+    }
 
     let index = slides.findIndex((s) => s.classList.contains("is-active"));
     if (index < 0) index = 0;
 
     const counter = carousel.querySelector("[data-carousel-counter]");
     const viewport = carousel.querySelector("[data-carousel-viewport]");
+    const shouldLoop = carousel.dataset.carouselLoop === "true";
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    let loopTimer = null;
+    const loopMs = 1500;
 
     function pauseVideos(exceptSlide) {
       carousel.querySelectorAll(".carousel__video").forEach((video) => {
@@ -111,21 +137,60 @@ function initCarousels(root) {
         media.addEventListener("click", (e) => {
           e.stopPropagation();
           const slide = media.closest(".carousel__slide");
-          const slideIndex = slide ? Number(slide.dataset.index) : index;
-          openLightbox(lightboxItems, slideIndex);
+          const slideIndex = isGallery
+            ? galleryIndex
+            : slide
+              ? Number(slide.dataset.index)
+              : index;
+          if (shouldLoop) stopLoop();
+          const loopOptions = shouldLoop
+            ? {
+                loop: true,
+                onIndexChange: (i) => showSlide(i),
+                onClose: () => {
+                  if (!document.hidden) startLoop();
+                },
+              }
+            : {};
+          openLightbox(lightboxItems, slideIndex, loopOptions);
         });
       });
 
     carousel.addEventListener("keydown", (e) => {
       if (e.key === "ArrowRight") {
-        e.preventDefault();
+        e.stopPropagation();
         goNext();
       }
       if (e.key === "ArrowLeft") {
-        e.preventDefault();
+        e.stopPropagation();
         goPrev();
       }
     });
+
+    function stopLoop() {
+      if (loopTimer) {
+        clearInterval(loopTimer);
+        loopTimer = null;
+      }
+    }
+
+    function startLoop() {
+      if (!shouldLoop || slides.length <= 1 || prefersReducedMotion) return;
+      stopLoop();
+      loopTimer = setInterval(goNext, loopMs);
+    }
+
+    if (shouldLoop) {
+      carousel.addEventListener("mouseenter", stopLoop);
+      carousel.addEventListener("mouseleave", startLoop);
+      carousel.addEventListener("focusin", stopLoop);
+      carousel.addEventListener("focusout", startLoop);
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) stopLoop();
+        else startLoop();
+      });
+      startLoop();
+    }
 
     showSlide(index);
   });

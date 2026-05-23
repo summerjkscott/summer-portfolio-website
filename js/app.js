@@ -5,9 +5,12 @@ function buildSidebarNav() {
   navEl.innerHTML = categories
     .map((category) => {
       const panelId = `panel-${category.slug}`;
-      const links = category.projects
-        .map(
-          (p) => `
+      const sorted = getSortedProjects(category);
+      const links =
+        sorted.length > 0
+          ? sorted
+              .map(
+                (p) => `
         <li>
           <a
             class="nav__link"
@@ -16,17 +19,26 @@ function buildSidebarNav() {
             data-slug="${p.slug}"
           >${p.title}</a>
         </li>`
-        )
-        .join("");
+              )
+              .join("")
+          : "";
 
       return `
       <div class="nav__group" data-category="${category.slug}">
-        <button
-          type="button"
-          class="nav__trigger"
-          aria-expanded="false"
-          aria-controls="${panelId}"
-        >${category.label}</button>
+        <div class="nav__group-header">
+          <a
+            class="nav__trigger"
+            href="#/${category.slug}"
+            data-category-link="${category.slug}"
+          >${category.label}</a>
+          <button
+            type="button"
+            class="nav__toggle"
+            aria-expanded="false"
+            aria-controls="${panelId}"
+            aria-label="Toggle ${category.label} projects"
+          ><span class="nav__toggle-icon">+</span></button>
+        </div>
         <div class="nav__panel" id="${panelId}">
           <ul class="nav__list">${links}</ul>
         </div>
@@ -35,6 +47,16 @@ function buildSidebarNav() {
     .join("");
 
   bindNavEvents();
+  bindHomeLink();
+}
+
+function bindHomeLink() {
+  document.querySelectorAll("[data-home-link]").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.hash = "";
+    });
+  });
 }
 
 function getNavGroups() {
@@ -44,29 +66,41 @@ function getNavGroups() {
 function expandNavGroup(group) {
   getNavGroups().forEach((g) => {
     const open = g === group;
-    g.querySelector(".nav__trigger").setAttribute("aria-expanded", String(open));
+    const toggle = g.querySelector(".nav__toggle");
+    const icon = toggle?.querySelector(".nav__toggle-icon");
+    if (toggle) toggle.setAttribute("aria-expanded", String(open));
+    if (icon) icon.textContent = open ? "−" : "+";
     g.querySelector(".nav__panel").classList.toggle("is-open", open);
   });
 }
 
 function toggleNavGroup(group) {
-  const trigger = group.querySelector(".nav__trigger");
+  const toggle = group.querySelector(".nav__toggle");
+  const icon = toggle.querySelector(".nav__toggle-icon");
   const panel = group.querySelector(".nav__panel");
-  const willOpen = trigger.getAttribute("aria-expanded") !== "true";
+  const willOpen = toggle.getAttribute("aria-expanded") !== "true";
 
   if (willOpen) {
     expandNavGroup(group);
-    trigger.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    if (icon) icon.textContent = "−";
   } else {
-    trigger.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-expanded", "false");
     panel.classList.remove("is-open");
+    if (icon) icon.textContent = "+";
   }
 }
 
 function setActiveNav(categorySlug, projectSlug) {
   document.querySelectorAll(".nav__link").forEach((link) => {
-    const isActive = link.dataset.slug === projectSlug;
+    const isActive =
+      link.dataset.category === categorySlug && link.dataset.slug === projectSlug;
     link.classList.toggle("is-active", isActive);
+  });
+
+  document.querySelectorAll(".nav__trigger").forEach((trigger) => {
+    const slug = trigger.dataset.categoryLink;
+    const isCategoryView = slug === categorySlug && !projectSlug;
+    trigger.classList.toggle("is-active", isCategoryView);
   });
 
   if (categorySlug) {
@@ -80,9 +114,42 @@ function parseRoute() {
   return hash.split("/").filter(Boolean);
 }
 
+function renderGalleryPhotoCard(category, item, index) {
+  const pseudoProject = {
+    title: `Photograph ${index + 1}`,
+    slug: `gallery-${index}`,
+    media: [item],
+  };
+  const carousel = renderCarouselMarkup(category.slug, pseudoProject, "home", {
+    gallery: true,
+    galleryIndex: index,
+  });
+
+  return `<article class="home-project home-project--photo">${carousel}</article>`;
+}
+
+function renderGalleryColumns(category) {
+  const items = category.gallery || [];
+  const columns = [[], [], []];
+  items.forEach((item, i) => {
+    columns[i % 3].push({ item, index: i });
+  });
+
+  return columns
+    .map(
+      (col) => `
+      <div class="home__column">
+        <div class="home__column-projects">
+          ${col.map(({ item, index }) => renderGalleryPhotoCard(category, item, index)).join("")}
+        </div>
+      </div>`
+    )
+    .join("");
+}
+
 function renderHomeProjectCard(category, project) {
   const dateHtml = project.date
-    ? `<p class="home-project__date">${project.date}</p>`
+    ? `<p class="home-project__date body-text">${project.date}</p>`
     : "";
   const carousel = renderCarouselMarkup(category.slug, project, "home");
 
@@ -93,20 +160,44 @@ function renderHomeProjectCard(category, project) {
       </h3>
       ${dateHtml}
       ${carousel}
-      <div class="home-project__text">${formatDescription(project.description)}</div>
+      <div class="home-project__text body-text">${formatDescription(project.description)}</div>
+      ${renderProjectDownload(category, project)}
     </article>`;
+}
+
+function renderProjectColumns(category) {
+  const projects = getSortedProjects(category);
+  const columns = [[], [], []];
+  projects.forEach((project, i) => {
+    columns[i % 3].push(project);
+  });
+
+  return columns
+    .map(
+      (col) => `
+      <div class="home__column">
+        <div class="home__column-projects">
+          ${col.map((p) => renderHomeProjectCard(category, p)).join("")}
+        </div>
+      </div>`
+    )
+    .join("");
 }
 
 function renderHome() {
   const columnsHtml = categories
     .map((category) => {
-      const projectsHtml = category.projects
-        .map((p) => renderHomeProjectCard(category, p))
-        .join("");
+      const cardsHtml = category.gallery?.length
+        ? category.gallery
+            .map((item, index) => renderGalleryPhotoCard(category, item, index))
+            .join("")
+        : getSortedProjects(category)
+            .map((p) => renderHomeProjectCard(category, p))
+            .join("");
 
       return `
       <div class="home__column">
-        <div class="home__column-projects">${projectsHtml}</div>
+        <div class="home__column-projects">${cardsHtml}</div>
       </div>`;
     })
     .join("");
@@ -115,10 +206,6 @@ function renderHome() {
     <section class="view home" aria-label="Portfolio home">
       <header class="home__intro">
         <h1 class="home__title">Welcome to my portfolio.</h1>
-        <p class="home__subtitle">
-          Graphic design, drawings &amp; paintings, and photography by a fourth-year
-          student at OCAD University.
-        </p>
       </header>
       <div class="home__columns">${columnsHtml}</div>
     </section>
@@ -128,45 +215,18 @@ function renderHome() {
   setActiveNav(null, null);
 }
 
-
-function renderDetailGallery(categorySlug, project) {
-  if (!project.media?.length) {
-    return `<p class="project-description">No media uploaded yet.</p>`;
-  }
-
-  return project.media
-    .map((item, index) => {
-      const src = getMediaSrc(categorySlug, project.slug, item.file);
-      const alt = `${project.title} — ${index + 1}`;
-      const mediaHtml = renderMediaElement(item, src, alt, "project-gallery", {
-        controls: item.type === "video",
-      });
-      return `
-        <figure class="project-gallery__frame project-gallery__frame--clickable" data-lightbox-detail data-lightbox-index="${index}">
-          ${mediaHtml}
-        </figure>`;
-    })
-    .join("");
-}
-
-function renderProject(category, project) {
-  const dateHtml = project.date
-    ? `<p class="project-meta">${category.label} · ${project.date}</p>`
-    : `<p class="project-meta">${category.label}</p>`;
+function renderCategoryPage(category) {
+  const columnsHtml = category.gallery?.length
+    ? renderGalleryColumns(category)
+    : renderProjectColumns(category);
 
   main.innerHTML = `
-    <section class="view project" aria-label="${project.title}">
-      <header class="project-header category-header">
+    <section class="view category-page" aria-label="${category.label}">
+      <header class="page-header">
         <button type="button" class="back-btn" data-back aria-label="Back to home">←</button>
-        <div>
-          ${dateHtml}
-          <h1 class="project-title">${project.title}</h1>
-        </div>
+        <h1 class="page-header__title">${category.label}</h1>
       </header>
-      <div class="project-gallery project-gallery--detail">
-        ${renderDetailGallery(category.slug, project)}
-      </div>
-      <div class="project-description">${formatDescription(project.description)}</div>
+      <div class="home__columns home__columns--full">${columnsHtml}</div>
     </section>
   `;
 
@@ -174,7 +234,40 @@ function renderProject(category, project) {
     window.location.hash = "";
   });
 
-  initDetailLightbox(category.slug, project);
+  initCarousels(main);
+  setActiveNav(category.slug, null);
+}
+
+function renderProject(category, project) {
+  const dateHtml = project.date
+    ? `<p class="project-meta body-text">${category.label} · ${project.date}</p>`
+    : `<p class="project-meta body-text">${category.label}</p>`;
+  const carousel = renderCarouselMarkup(category.slug, project, "detail");
+
+  main.innerHTML = `
+    <section class="view project" aria-label="${project.title}">
+      <header class="page-header page-header--project">
+        <button type="button" class="back-btn" data-back aria-label="Back to ${category.label}">←</button>
+      </header>
+      <div class="project-detail">
+        <div class="project-detail__media">
+          ${carousel}
+        </div>
+        <aside class="project-detail__info">
+          ${dateHtml}
+          <h1 class="project-detail__title">${project.title}</h1>
+          <div class="project-detail__text body-text">${formatDescription(project.description)}</div>
+          ${renderProjectDownload(category, project)}
+        </aside>
+      </div>
+    </section>
+  `;
+
+  main.querySelector("[data-back]").addEventListener("click", () => {
+    window.location.hash = `/${category.slug}`;
+  });
+
+  initCarousels(main);
   setActiveNav(category.slug, project.slug);
 }
 
@@ -188,7 +281,13 @@ function route() {
 
   const [categorySlug, projectSlug] = parts;
 
+  const category = findCategory(categorySlug);
+
   if (projectSlug) {
+    if (category?.gallery?.length) {
+      renderCategoryPage(category);
+      return;
+    }
     const match = findProject(categorySlug, projectSlug);
     if (match) {
       renderProject(match.category, match.project);
@@ -196,13 +295,34 @@ function route() {
     }
   }
 
+  if (category) {
+    renderCategoryPage(category);
+    return;
+  }
+
   renderHome();
 }
 
 function bindNavEvents() {
   getNavGroups().forEach((group) => {
-    group.querySelector(".nav__trigger").addEventListener("click", () => {
+    const toggleBtn = group.querySelector(".nav__toggle");
+    toggleBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       toggleNavGroup(group);
+    });
+  });
+
+  document.querySelectorAll(".nav__trigger").forEach((trigger) => {
+    trigger.addEventListener("click", (e) => {
+      const group = trigger.closest(".nav__group");
+      const toggle = group.querySelector(".nav__toggle");
+      const isOpen = toggle.getAttribute("aria-expanded") === "true";
+
+      if (isOpen) {
+        e.preventDefault();
+        toggleNavGroup(group);
+      }
     });
   });
 

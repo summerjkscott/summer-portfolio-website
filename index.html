@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=IBM+Plex+Mono:wght@400;500&family=Josefin+Sans:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/styles.css" />
@@ -19,28 +19,54 @@
   <body>
     <div class="layout">
       <aside class="sidebar" aria-label="Site information">
-        <div class="sidebar__intro">
-          <h1 class="sidebar__name">
-            <span class="sidebar__name-line">Summer</span>
-            <span class="sidebar__name-line">Scott</span>
-          </h1>
-          <p class="sidebar__role">Graphic Designer</p>
-        </div>
+        <div class="sidebar__top">
+          <div class="sidebar__intro">
+            <h1 class="sidebar__name">
+              <a href="#" class="sidebar__name-link" data-home-link>
+                <span class="sidebar__name-line">Summer</span>
+                <span class="sidebar__name-line">Scott</span>
+              </a>
+            </h1>
+            <p class="sidebar__role">Graphic Designer</p>
+          </div>
 
-        <img
-          class="sidebar__photo"
-          src="assets/profile_picture.jpeg"
-          alt="Portrait of Summer Scott"
-          width="200"
-          height="200"
-          onerror="this.onerror=null;this.src='assets/profile-placeholder.svg';"
-        />
+          <div class="sidebar__photo-wrap">
+            <img
+              class="sidebar__photo"
+              src="assets/profile_picture.png"
+              alt="Portrait of Summer Scott"
+              onerror="this.onerror=null;this.src='assets/profile-placeholder.svg';"
+            />
+          </div>
+        </div>
 
         <div class="sidebar__info">
           <section class="sidebar__contact">
             <h2 class="sidebar__heading">CONTACT</h2>
             <p class="sidebar__text">
               <a href="mailto:summerjkscott@gmail.com">summerjkscott@gmail.com</a>
+            </p>
+            <p class="sidebar__text sidebar__linkedin">
+              <a
+                href="https://www.linkedin.com/in/summerjkscott"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg
+                  class="sidebar__linkedin-icon"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 4.126 0 2.062 2.062 0 0 1-2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
+                  />
+                </svg>
+                LinkedIn
+              </a>
             </p>
           </section>
           <section>
@@ -56,9 +82,38 @@
         <nav class="nav" aria-label="Portfolio categories"></nav>
       </aside>
 
-      <main id="main" class="main" tabindex="-1"></main>
+      <div class="content">
+        <main id="main" class="main" tabindex="-1"></main>
+        <footer class="site-footer">
+          ©
+          <script>
+            document.write(new Date().getFullYear());
+          </script>
+          Summer Scott. All rights reserved.
+        </footer>
+      </div>
     </div>
 
+    <div id="custom-cursor" class="custom-cursor" aria-hidden="true">
+      <img
+        class="custom-cursor__img custom-cursor__img--default"
+        src="assets/cursor-bee.png"
+        alt=""
+        width="48"
+        height="48"
+        draggable="false"
+      />
+      <img
+        class="custom-cursor__img custom-cursor__img--hover"
+        src="assets/cursor-bee-hover.png"
+        alt=""
+        width="72"
+        height="48"
+        draggable="false"
+      />
+    </div>
+
+    <script src="js/cursor.js" defer></script>
     <script src="js/data.js" defer></script>
     <script src="js/media-render.js" defer></script>
     <script src="js/lightbox.js" defer></script>

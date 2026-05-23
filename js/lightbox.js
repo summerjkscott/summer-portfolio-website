@@ -1,6 +1,12 @@
+const LOOP_INTERVAL_MS = 1500;
+
 let lightboxEl = null;
 let lightboxItems = [];
 let lightboxIndex = 0;
+let lightboxLoopTimer = null;
+let lightboxShouldLoop = false;
+let lightboxOnIndexChange = null;
+let lightboxOnClose = null;
 
 function ensureLightbox() {
   if (lightboxEl) return lightboxEl;
@@ -25,9 +31,11 @@ function ensureLightbox() {
   });
   lightboxEl.querySelector("[data-lightbox-prev]").addEventListener("click", () => {
     showLightboxSlide(lightboxIndex - 1);
+    restartLightboxLoop();
   });
   lightboxEl.querySelector("[data-lightbox-next]").addEventListener("click", () => {
     showLightboxSlide(lightboxIndex + 1);
+    restartLightboxLoop();
   });
 
   document.addEventListener("keydown", onLightboxKeydown);
@@ -38,8 +46,37 @@ function ensureLightbox() {
 function onLightboxKeydown(e) {
   if (!lightboxEl || lightboxEl.hasAttribute("hidden")) return;
   if (e.key === "Escape") closeLightbox();
-  if (e.key === "ArrowRight") showLightboxSlide(lightboxIndex + 1);
-  if (e.key === "ArrowLeft") showLightboxSlide(lightboxIndex - 1);
+  if (e.key === "ArrowRight") {
+    showLightboxSlide(lightboxIndex + 1);
+    restartLightboxLoop();
+  }
+  if (e.key === "ArrowLeft") {
+    showLightboxSlide(lightboxIndex - 1);
+    restartLightboxLoop();
+  }
+}
+
+function stopLightboxLoop() {
+  if (lightboxLoopTimer) {
+    clearInterval(lightboxLoopTimer);
+    lightboxLoopTimer = null;
+  }
+}
+
+function startLightboxLoop() {
+  stopLightboxLoop();
+  if (!lightboxShouldLoop || lightboxItems.length <= 1) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  lightboxLoopTimer = setInterval(() => {
+    showLightboxSlide(lightboxIndex + 1);
+    if (lightboxOnIndexChange) lightboxOnIndexChange(lightboxIndex);
+  }, LOOP_INTERVAL_MS);
+}
+
+function restartLightboxLoop() {
+  if (!lightboxShouldLoop) return;
+  startLightboxLoop();
 }
 
 function buildLightboxItems(categorySlug, project) {
@@ -48,6 +85,15 @@ function buildLightboxItems(categorySlug, project) {
     type: item.type,
     src: getMediaSrc(categorySlug, project.slug, item.file),
     alt: `${project.title} — ${index + 1}`,
+  }));
+}
+
+function buildGalleryLightboxItems(category) {
+  if (!category?.gallery?.length) return [];
+  return category.gallery.map((item, index) => ({
+    type: item.type,
+    src: getMediaSrc(category.slug, "gallery-0", item.file),
+    alt: `${category.label} — ${index + 1}`,
   }));
 }
 
@@ -74,23 +120,35 @@ function showLightboxSlide(nextIndex) {
     lightboxItems.length > 1 ? "visible" : "hidden";
   lightboxEl.querySelector("[data-lightbox-next]").style.visibility =
     lightboxItems.length > 1 ? "visible" : "hidden";
+
+  if (lightboxOnIndexChange) lightboxOnIndexChange(lightboxIndex);
 }
 
-function openLightbox(items, startIndex = 0) {
+function openLightbox(items, startIndex = 0, options = {}) {
   if (!items?.length) return;
   ensureLightbox();
   lightboxItems = items;
+  lightboxShouldLoop = Boolean(options.loop);
+  lightboxOnIndexChange = options.onIndexChange || null;
+  lightboxOnClose = options.onClose || null;
   showLightboxSlide(startIndex);
   lightboxEl.removeAttribute("hidden");
   document.body.classList.add("lightbox-open");
+  startLightboxLoop();
 }
 
 function closeLightbox() {
   if (!lightboxEl) return;
+  stopLightboxLoop();
+  lightboxShouldLoop = false;
+  lightboxOnIndexChange = null;
+  const onClose = lightboxOnClose;
+  lightboxOnClose = null;
   lightboxEl.setAttribute("hidden", "");
   document.body.classList.remove("lightbox-open");
   lightboxEl.querySelector("[data-lightbox-content]").innerHTML = "";
   lightboxItems = [];
+  if (onClose) onClose();
 }
 
 function initDetailLightbox(categorySlug, project) {
