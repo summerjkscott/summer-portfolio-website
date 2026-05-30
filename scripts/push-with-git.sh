@@ -5,7 +5,7 @@
 set -e
 
 USERNAME="$1"
-REPO_NAME="${2:-summer-scott-portfolio}"
+REPO_NAME="${2:-summer-portfolio-website}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 if [ -z "$USERNAME" ]; then

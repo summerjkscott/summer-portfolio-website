@@ -9,13 +9,13 @@ Open `index.html` in your browser, or run a local server from this folder.
 ### Option A — GitHub website + Terminal (no extra installs)
 
 1. Go to [github.com/new](https://github.com/new)
-2. Repository name: `summer-scott-portfolio`
+2. Repository name: `summer-portfolio-website` (display name: **Summer Portfolio Website**)
 3. Choose **Public**, leave “Add a README” **unchecked**, click **Create repository**
 4. In Terminal, run (replace `YOUR_USERNAME` with your GitHub username):
 
 ```bash
 cd ~/Desktop/summer-scott-portfolio
-git remote add origin https://github.com/YOUR_USERNAME/summer-scott-portfolio.git
+git remote add origin https://github.com/YOUR_USERNAME/summer-portfolio-website.git
 git branch -M main
 git push -u origin main
 ```

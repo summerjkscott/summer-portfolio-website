@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REPO_NAME="${1:-summer-scott-portfolio}"
+REPO_NAME="${1:-summer-portfolio-website}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 cd "$ROOT"
@@ -21,7 +21,7 @@ if git remote get-url origin >/dev/null 2>&1; then
   echo "Remote 'origin' already exists. Pushing..."
   git push -u origin main
 else
-  gh repo create "$REPO_NAME" --public --description "Summer Scott — Graphic Design portfolio" --source=. --remote=origin --push
+  gh repo create "$REPO_NAME" --public --description "Summer Portfolio Website" --source=. --remote=origin --push
 fi
 
 echo ""
