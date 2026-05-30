@@ -1,12 +1,16 @@
 function renderCarouselMarkup(categorySlug, project, variant, options = {}) {
-  if (!project.media || project.media.length === 0) {
+  const sectionSlug = options.sectionSlug ?? null;
+  const media = options.media ?? project.media;
+  const displayTitle = options.carouselTitle ?? project.title;
+
+  if (!media || media.length === 0) {
     return `<div class="carousel carousel--${variant} carousel--empty">No media uploaded yet</div>`;
   }
 
-  const items = project.media
+  const items = media
     .map((item, index) => {
-      const src = getMediaSrc(categorySlug, project.slug, item.file);
-      const alt = `${project.title} — ${index + 1}`;
+      const src = getMediaSrc(categorySlug, project.slug, item.file, sectionSlug);
+      const alt = `${displayTitle} — ${index + 1}`;
       const mediaHtml = renderMediaElement(item, src, alt, "carousel", {
         eager: index === 0,
       });
@@ -17,10 +21,17 @@ function renderCarouselMarkup(categorySlug, project, variant, options = {}) {
     })
     .join("");
 
-  const total = project.media.length;
-  const hintText = project.carouselLoop
-    ? "Auto-playing · Click to enlarge"
-    : "Click to enlarge";
+  const total = media.length;
+  const hintText =
+    variant === "home"
+      ? options.gallery
+        ? options.linkToCategory
+          ? "Click to view photography"
+          : "Click to enlarge"
+        : "Click to view project"
+      : project.carouselLoop
+        ? "Auto-playing · Click to enlarge"
+        : "Click to enlarge";
   const hint =
     total > 0 ? `<span class="carousel__hint">${hintText}</span>` : "";
   const controls =
@@ -36,6 +47,10 @@ function renderCarouselMarkup(categorySlug, project, variant, options = {}) {
     : "";
   const loopAttr = project.carouselLoop ? `data-carousel-loop="true"` : "";
   const loopClass = project.carouselLoop ? " carousel--loop" : "";
+  const sectionAttr = sectionSlug ? `data-section-slug="${sectionSlug}"` : "";
+  const linkToCategoryAttr = options.linkToCategory
+    ? `data-link-to-category="true"`
+    : "";
 
   return `
     <div
@@ -43,12 +58,14 @@ function renderCarouselMarkup(categorySlug, project, variant, options = {}) {
       data-carousel
       data-category-slug="${categorySlug}"
       data-project-slug="${project.slug}"
+      ${sectionAttr}
       ${galleryAttrs}
+      ${linkToCategoryAttr}
       ${loopAttr}
       data-total="${total}"
       tabindex="0"
       role="region"
-      aria-label="${project.title} media gallery"
+      aria-label="${displayTitle} media gallery"
     >
       <div class="carousel__viewport" data-carousel-viewport>
         <div class="carousel__track">${items}</div>
@@ -66,6 +83,7 @@ function initCarousels(root) {
 
     const categorySlug = carousel.dataset.categorySlug;
     const projectSlug = carousel.dataset.projectSlug;
+    const sectionSlug = carousel.dataset.sectionSlug || null;
     const isGallery = carousel.dataset.gallery === "true";
     const galleryIndex = Number(carousel.dataset.galleryIndex) || 0;
     let lightboxItems = [];
@@ -75,7 +93,16 @@ function initCarousels(root) {
       lightboxItems = category ? buildGalleryLightboxItems(category) : [];
     } else {
       const match = findProject(categorySlug, projectSlug);
-      lightboxItems = match ? buildLightboxItems(categorySlug, match.project) : [];
+      if (!match) {
+        lightboxItems = [];
+      } else if (sectionSlug && match.project.sections) {
+        const section = match.project.sections.find((s) => s.slug === sectionSlug);
+        lightboxItems = section
+          ? buildLightboxItems(categorySlug, match.project, section)
+          : [];
+      } else {
+        lightboxItems = buildLightboxItems(categorySlug, match.project);
+      }
     }
 
     let index = slides.findIndex((s) => s.classList.contains("is-active"));
@@ -131,30 +158,74 @@ function initCarousels(root) {
       goPrev();
     });
 
-    carousel
-      .querySelectorAll(".carousel__image, .carousel__video, .carousel__pdf")
-      .forEach((media) => {
-        media.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const slide = media.closest(".carousel__slide");
-          const slideIndex = isGallery
-            ? galleryIndex
-            : slide
-              ? Number(slide.dataset.index)
-              : index;
-          if (shouldLoop) stopLoop();
-          const loopOptions = shouldLoop
-            ? {
-                loop: true,
-                onIndexChange: (i) => showSlide(i),
-                onClose: () => {
-                  if (!document.hidden) startLoop();
-                },
-              }
-            : {};
-          openLightbox(lightboxItems, slideIndex, loopOptions);
-        });
+    const isHomeCard = carousel.classList.contains("carousel--home");
+    const linkToCategory = carousel.dataset.linkToCategory === "true";
+    const isHomeGallery = isHomeCard && isGallery && linkToCategory;
+
+    function goToProjectPage() {
+      if (shouldLoop) stopLoop();
+      window.location.hash = `/${categorySlug}/${projectSlug}`;
+    }
+
+    function goToCategoryPage() {
+      if (shouldLoop) stopLoop();
+      window.location.hash = `/${categorySlug}`;
+    }
+
+    if (isHomeGallery) {
+      viewport?.addEventListener("click", (e) => {
+        if (e.target.closest(".carousel__btn")) return;
+        goToCategoryPage();
       });
+      carousel
+        .querySelectorAll(".carousel__image, .carousel__video, .carousel__pdf")
+        .forEach((media) => {
+          media.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            goToCategoryPage();
+          });
+        });
+    } else if (isHomeCard && !isGallery) {
+      viewport?.addEventListener("click", (e) => {
+        if (e.target.closest(".carousel__btn")) return;
+        goToProjectPage();
+      });
+      carousel
+        .querySelectorAll(".carousel__image, .carousel__video, .carousel__pdf")
+        .forEach((media) => {
+          media.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            goToProjectPage();
+          });
+        });
+    } else {
+      carousel
+        .querySelectorAll(".carousel__image, .carousel__video, .carousel__pdf")
+        .forEach((media) => {
+          media.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const slide = media.closest(".carousel__slide");
+            const slideIndex = isGallery
+              ? galleryIndex
+              : slide
+                ? Number(slide.dataset.index)
+                : index;
+            if (shouldLoop) stopLoop();
+            const loopOptions = shouldLoop
+              ? {
+                  loop: true,
+                  onIndexChange: (i) => showSlide(i),
+                  onClose: () => {
+                    if (!document.hidden) startLoop();
+                  },
+                }
+              : {};
+            openLightbox(lightboxItems, slideIndex, loopOptions);
+          });
+        });
+    }
 
     carousel.addEventListener("keydown", (e) => {
       if (e.key === "ArrowRight") {
@@ -193,5 +264,29 @@ function initCarousels(root) {
     }
 
     showSlide(index);
+  });
+}
+
+function initScrollAutoplay(root) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  root.querySelectorAll("[data-autoplay-on-visible]").forEach((section) => {
+    const video = section.querySelector(".carousel__video");
+    if (!video) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            video.play().catch(() => {});
+          } else {
+            video.pause();
+          }
+        });
+      },
+      { threshold: 0.35 }
+    );
+
+    observer.observe(section);
   });
 }

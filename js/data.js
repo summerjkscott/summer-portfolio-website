@@ -9,11 +9,25 @@ function getMediaBasePath(categorySlug, projectSlug) {
   return `assets/projects/${categorySlug}/${projectSlug}`;
 }
 
-function getMediaSrc(categorySlug, projectSlug, file) {
+function getMediaSrc(categorySlug, projectSlug, file, sectionSlug = null) {
   if (projectSlug?.startsWith("gallery-")) {
     return `assets/projects/${categorySlug}/${encodeURIComponent(file)}`;
   }
-  return `${getMediaBasePath(categorySlug, projectSlug)}/${encodeURIComponent(file)}`;
+  const base = sectionSlug
+    ? `${getMediaBasePath(categorySlug, projectSlug)}/${sectionSlug}`
+    : getMediaBasePath(categorySlug, projectSlug);
+  return `${base}/${encodeURIComponent(file)}`;
+}
+
+function getProjectPreviewMedia(project) {
+  if (project.cover) {
+    return { media: [project.cover], sectionSlug: null };
+  }
+  if (project.sections?.length) {
+    const first = project.sections[0];
+    return { media: first.media, sectionSlug: first.slug };
+  }
+  return { media: project.media, sectionSlug: null };
 }
 
 function photographyGallery() {
@@ -35,6 +49,64 @@ const portfolio = {
     label: "Graphic Design",
     slug: "graphic-design",
     projects: [
+      {
+        title: "Mini Thesis",
+        slug: "mini-thesis",
+        date: "2026",
+        cover: { type: "image", file: "cover.jpg" },
+        processLink: {
+          url: "https://summerjkscott.tumblr.com/",
+          label: "Click here to see the project's full process.",
+        },
+        description: `During the winter semester of my third year, I explored the concept of “aphelion” through a mini thesis project that combined experimental, 2D, 3D, and 4D works alongside a reflective piece, all designed to connect and inform one another.
+
+Aphelion is the point in the Earth's orbit or a celestial body where it is farthest from the Sun.`,
+        sections: [
+          {
+            title: "Experimental – 4 Mini Puzzles",
+            slug: "experimental",
+            description: `This piece explores the idea of force and attraction, which needs more than one body to exist - like the idea of “together we stand, divided we fall.” For this project, I created four mini puzzles using images of my family and me that only make sense when they are put together. I chose puzzles because they show how separate parts depend on each other to feel complete. I designed the pieces in more elliptical, celestial shapes instead of typical puzzle forms to connect back to ideas of aphelion and orbital movement. The puzzles also function as coasters, tying them to the idea of home and family. I was happy to include my family in this piece, which made it feel more personal and meaningful. I also changed the box/holder for the puzzles, since the original square box didn’t match the circular theme I used throughout my projects. Updating it helped keep everything more consistent visually. Overall, the project moves from ideas of force and attraction into something more personal, love. Showing that connection isn’t just physical, but emotional too.`,
+            media: [
+              { type: "image", file: "01.jpg" },
+              { type: "image", file: "02.jpg" },
+              { type: "image", file: "03.jpg" },
+              { type: "image", file: "04.png" },
+            ],
+          },
+          {
+            title: "2D - Calendar",
+            slug: "2d-calendar",
+            description: `This calendar is based on the Earth’s orbit around the sun. When I was researching aphelion, I also learned about perihelion, which is the point where the Earth is closest to the sun. Since it takes 365 days for the Earth to complete one full orbit, the calendar follows this yearly cycle. Many people confuse aphelion and perihelion with the summer and winter solstices, even though they are different astronomical events. For example, the summer solstice happens about two weeks before aphelion, not at perihelion, even though people often associate heat with being closer to the sun. This calendar highlights four key days - aphelion, perihelion, the summer solstice, and the winter solstice - to help clarify this confusion and show important moments in Earth’s relationship with the sun. The months are also shown in different sizes depending on their distance from the sun, with January as the largest (aphelion) and July as the smallest (perihelion), reinforcing the idea of near and far.`,
+            media: [
+              { type: "image", file: "01.png" },
+              { type: "image", file: "02.png" },
+            ],
+          },
+          {
+            title: "3D - Mobile",
+            slug: "3d-mobile",
+            description: `This mobile is inspired by the solar system and the ideas of aphelion and perihelion, far and close. I used those ideas to think about people at different points in life. The mobile uses pictures of my sister and I when we were young with our grandparents, showing the beginning and end of life. Just like the Earth moves closer and farther from the sun, the mobile shows the distance between being young and old. By using these family photos, I connected the idea of near and far in space to near and far in human life.`,
+            media: [
+              { type: "video", file: "01.mov" },
+              { type: "image", file: "02.jpg" },
+              { type: "image", file: "03.jpg" },
+            ],
+          },
+          {
+            title: "4D - Video",
+            slug: "4d-video",
+            autoplayOnVisible: true,
+            description: `For 4D, I created a video that uses a binocular view. At first, I wasn’t sure what to make, but I wanted to connect it to my other projects through circles and spheres. Paul mentioned binoculars, which reminded me of my grandfather. He had a big pair, and I had a small pair. Binoculars relate to the idea of seeing things both close and far, which connects back to aphelion and perihelion. I used images of the Earth in the video to tie it to the solar system. Overall, the piece connects personal memory with the idea of distance, using binoculars as a way to show both closeness and distance at the same time.`,
+            media: [{ type: "video", file: "01.mp4" }],
+          },
+          {
+            title: "Reflective - Magnet Collage",
+            slug: "reflective",
+            description: `This circular collage brings together elements from all of my projects. The circular frame connects to the idea of spheres and ties everything back to the overall theme. The collage is interactive and uses magnets, allowing the pieces to connect and move. Each quadrant represents one project: experimental, 2D, 3D, and 4D. The pieces are designed to come together to form a complete whole, showing how each part is connected and dependent on the others. The magnets relate to ideas of attraction and force, reinforcing the themes of closeness and distance that appear throughout all of my projects.`,
+            media: mediaImages(2, "jpg"),
+          },
+        ],
+      },
       {
         title: "3D Type - FIFA 26",
         slug: "3d-type-fifa-26",
@@ -156,6 +228,13 @@ Collaborative members: Ayesha Thakur, Summer Scott, Xingyu Campbell, Tracey Chen
         media: mediaImages(5, "png"),
       },
       {
+        title: "Star Wars",
+        slug: "star-wars",
+        date: "2026",
+        description: `This 20 cm × 15 cm acrylic painting was inspired by a photo of my boyfriend and I dressed as Padmé Amidala and Anakin Skywalker from Star Wars for Halloween. I created this piece as a personal gift for him, using the painting to capture a meaningful memory and our shared connection to the characters and story.`,
+        media: mediaImages(1, "jpg"),
+      },
+      {
         title: "11 Tattoo Design",
         slug: "11-tattoo-design",
         date: "2025",
@@ -252,7 +331,7 @@ While I am happy with the outcome, the process taught me the importance of plann
 Wanting a fresh start, I painted over the entire canvas in black and completely reimagined the composition. From there, I created a large moon with a leafless tree silhouetted in front of it. The final piece became the complete opposite of the original concept - transforming from something bright and cheerful into something dark, quiet, and emotional.
 
 This painting became a way for me to express my emotions through art, and it remains one of my favourite pieces because of both the process and the outcome. I also appreciate how viewers interpret the work differently: some see the shading on the moon itself, while others interpret it as leaves blending into the tree. The piece challenged me creatively and emotionally, but ultimately became one of the most meaningful works I have created.`,
-        media: mediaImages(1, "jpg"),
+        media: mediaImages(2, "jpg"),
       },
       {
         title: "Bob Ross Inspired",
@@ -326,4 +405,21 @@ function renderProjectDownload(category, project) {
   const href = getProjectDownloadSrc(category.slug, project.slug, file);
 
   return `<p class="project-download body-text"><a href="${href}" target="_blank" rel="noopener noreferrer">${label}</a></p>`;
+}
+
+function renderProjectProcessLink(project) {
+  if (!project.processLink) return "";
+
+  const { url, label } = project.processLink;
+
+  return `<p class="project-process-link-wrap">
+    <a class="project-process-link body-text" href="${url}" target="_blank" rel="noopener noreferrer">
+      <span class="project-process-link__icon" aria-hidden="true">
+        <svg class="project-process-link__svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tumblr">
+          <path fill="#001935" d="M321.2 396.3c-11.8 6.7-25.1 10.3-38.7 10.3-54.6 0-98.8-44.2-98.8-98.8V185.8H512V78.9H183.7V0h-95.1c-3.6 26.3-9.6 51.5-17.9 75.1-8.7 24.6-20.1 47.9-33.9 69.3-14.2 21.9-30.8 41.7-49.3 59.1-18.9 17.7-39.8 32.2-62.1 43.2v95.1h95.1v129.8c0 50.4 20.4 98.7 56.8 134.1 36 35.1 84.6 54.8 135.4 54.8h14.1z"/>
+        </svg>
+      </span>
+      <span>${label}</span>
+    </a>
+  </p>`;
 }

@@ -1,6 +1,9 @@
 const main = document.getElementById("main");
 const navEl = document.querySelector(".nav");
 
+const HOME_BEE_LOOP_PATH =
+  "M 0 78 C 110 38, 225 112, 340 70 C 460 28, 580 28, 700 72 C 820 118, 910 80, 1000 66";
+
 function buildSidebarNav() {
   navEl.innerHTML = categories
     .map((category) => {
@@ -114,7 +117,7 @@ function parseRoute() {
   return hash.split("/").filter(Boolean);
 }
 
-function renderGalleryPhotoCard(category, item, index) {
+function renderGalleryPhotoCard(category, item, index, options = {}) {
   const pseudoProject = {
     title: `Photograph ${index + 1}`,
     slug: `gallery-${index}`,
@@ -123,6 +126,7 @@ function renderGalleryPhotoCard(category, item, index) {
   const carousel = renderCarouselMarkup(category.slug, pseudoProject, "home", {
     gallery: true,
     galleryIndex: index,
+    linkToCategory: options.linkToCategory === true,
   });
 
   return `<article class="home-project home-project--photo">${carousel}</article>`;
@@ -151,7 +155,13 @@ function renderHomeProjectCard(category, project) {
   const dateHtml = project.date
     ? `<p class="home-project__date body-text">${project.date}</p>`
     : "";
-  const carousel = renderCarouselMarkup(category.slug, project, "home");
+  const preview = getProjectPreviewMedia(project);
+  const carousel = renderCarouselMarkup(
+    category.slug,
+    { ...project, media: preview.media },
+    "home",
+    { sectionSlug: preview.sectionSlug }
+  );
 
   return `
     <article class="home-project" id="${project.slug}">
@@ -189,7 +199,9 @@ function renderHome() {
     .map((category) => {
       const cardsHtml = category.gallery?.length
         ? category.gallery
-            .map((item, index) => renderGalleryPhotoCard(category, item, index))
+            .map((item, index) =>
+              renderGalleryPhotoCard(category, item, index, { linkToCategory: true })
+            )
             .join("")
         : getSortedProjects(category)
             .map((p) => renderHomeProjectCard(category, p))
@@ -204,8 +216,58 @@ function renderHome() {
 
   main.innerHTML = `
     <section class="view home" aria-label="Portfolio home">
-      <header class="home__intro">
-        <h1 class="home__title">Welcome to my portfolio.</h1>
+      <header class="home__intro" aria-label="Animated bee banner">
+        <svg
+          class="home__bee-trail"
+          viewBox="0 0 1000 180"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <defs>
+            <path id="home-bee-path" d="${HOME_BEE_LOOP_PATH}" />
+            <mask id="home-bee-trail-mask">
+              <path
+                class="home__bee-trail-mask"
+                pathLength="100"
+                d="${HOME_BEE_LOOP_PATH}"
+              >
+                <animate
+                  attributeName="stroke-dashoffset"
+                  dur="4.8s"
+                  begin="0.18s"
+                  from="100"
+                  to="0"
+                  fill="freeze"
+                />
+              </path>
+            </mask>
+          </defs>
+          <use
+            href="#home-bee-path"
+            class="home__bee-trail-dashes"
+            mask="url(#home-bee-trail-mask)"
+          />
+          <g class="home__bee-svg">
+            <image
+              href="assets/home-bee.png"
+              x="-40"
+              y="-60"
+              width="80"
+              height="120"
+              transform="rotate(90)"
+            />
+            <animateMotion
+              dur="4.8s"
+              begin="0s"
+              repeatCount="1"
+              fill="freeze"
+              rotate="auto"
+            >
+              <mpath href="#home-bee-path" />
+            </animateMotion>
+          </g>
+        </svg>
       </header>
       <div class="home__columns">${columnsHtml}</div>
     </section>
@@ -238,36 +300,83 @@ function renderCategoryPage(category) {
   setActiveNav(category.slug, null);
 }
 
+function renderProjectSection(category, project, section) {
+  const carousel = renderCarouselMarkup(category.slug, project, "detail", {
+    sectionSlug: section.slug,
+    media: section.media,
+    carouselTitle: section.title,
+  });
+
+  const autoplayAttr = section.autoplayOnVisible ? ' data-autoplay-on-visible' : "";
+
+  return `
+    <article class="project-section" id="${section.slug}"${autoplayAttr}>
+      <div class="project-section__media">${carousel}</div>
+      <div class="project-section__content">
+        <h2 class="project-detail__title">${section.title}</h2>
+        <div class="project-section__text body-text">${formatDescription(section.description)}</div>
+      </div>
+    </article>`;
+}
+
 function renderProject(category, project) {
   const dateHtml = project.date
     ? `<p class="project-meta body-text">${category.label} · ${project.date}</p>`
     : `<p class="project-meta body-text">${category.label}</p>`;
-  const carousel = renderCarouselMarkup(category.slug, project, "detail");
 
-  main.innerHTML = `
-    <section class="view project" aria-label="${project.title}">
-      <header class="page-header page-header--project">
-        <button type="button" class="back-btn" data-back aria-label="Back to ${category.label}">←</button>
-      </header>
-      <div class="project-detail">
-        <div class="project-detail__media">
-          ${carousel}
+  if (project.sections?.length) {
+    const sectionsHtml = project.sections
+      .map((section) => renderProjectSection(category, project, section))
+      .join("");
+
+    main.innerHTML = `
+      <section class="view project project--sections" aria-label="${project.title}">
+        <header class="page-header page-header--project">
+          <button type="button" class="back-btn" data-back aria-label="Back to ${category.label}">←</button>
+        </header>
+        <div class="project-detail project-detail--sections">
+          <div class="project-intro">
+            <div class="project-intro__main">
+              ${dateHtml}
+              <h1 class="project-detail__title">${project.title}</h1>
+              <div class="project-detail__text body-text">${formatDescription(project.description)}</div>
+              ${renderProjectProcessLink(project)}
+              ${renderProjectDownload(category, project)}
+            </div>
+          </div>
+          <div class="project-sections">${sectionsHtml}</div>
         </div>
-        <aside class="project-detail__info">
-          ${dateHtml}
-          <h1 class="project-detail__title">${project.title}</h1>
-          <div class="project-detail__text body-text">${formatDescription(project.description)}</div>
-          ${renderProjectDownload(category, project)}
-        </aside>
-      </div>
-    </section>
-  `;
+      </section>
+    `;
+  } else {
+    const carousel = renderCarouselMarkup(category.slug, project, "detail");
+
+    main.innerHTML = `
+      <section class="view project" aria-label="${project.title}">
+        <header class="page-header page-header--project">
+          <button type="button" class="back-btn" data-back aria-label="Back to ${category.label}">←</button>
+        </header>
+        <div class="project-detail">
+          <div class="project-detail__media">
+            ${carousel}
+          </div>
+          <aside class="project-detail__info">
+            ${dateHtml}
+            <h1 class="project-detail__title">${project.title}</h1>
+            <div class="project-detail__text body-text">${formatDescription(project.description)}</div>
+            ${renderProjectDownload(category, project)}
+          </aside>
+        </div>
+      </section>
+    `;
+  }
 
   main.querySelector("[data-back]").addEventListener("click", () => {
     window.location.hash = `/${category.slug}`;
   });
 
   initCarousels(main);
+  initScrollAutoplay(main);
   setActiveNav(category.slug, project.slug);
 }
 

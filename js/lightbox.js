@@ -79,12 +79,15 @@ function restartLightboxLoop() {
   startLightboxLoop();
 }
 
-function buildLightboxItems(categorySlug, project) {
-  if (!project?.media?.length) return [];
-  return project.media.map((item, index) => ({
+function buildLightboxItems(categorySlug, project, section = null) {
+  const media = section?.media ?? project?.media;
+  if (!media?.length) return [];
+  const title = section ? `${project.title} — ${section.title}` : project.title;
+  const sectionSlug = section?.slug ?? null;
+  return media.map((item, index) => ({
     type: item.type,
-    src: getMediaSrc(categorySlug, project.slug, item.file),
-    alt: `${project.title} — ${index + 1}`,
+    src: getMediaSrc(categorySlug, project.slug, item.file, sectionSlug),
+    alt: `${title} — ${index + 1}`,
   }));
 }
 
