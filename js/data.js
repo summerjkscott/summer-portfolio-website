@@ -68,6 +68,20 @@ const portfolio = {
     slug: "graphic-design",
     projects: [
       {
+        title: "Personal Branding Exercise",
+        slug: "personal-branding-exercise",
+        date: "2026",
+        description: `This project explores the development of a personal brand identity based on the personality, interests, and values of my partner, Jaimee Jara. Through a questionnaire and research process, I identified three key characteristics that define her: creative, kind, and nostalgic. These qualities inspired the creation of ROBUNI, an original brand name combining her love of vinyl records and bunnies. I developed a playful, organic wordmark using a modified typeface, incorporating a vinyl record into the letter “O” and a small bunny detail above the “i.” A soft green and cream colour palette further reflects her personality, while the proposed packaging takes inspiration from vintage record sleeves, using rounded shapes and uncoated paperboard to create a tactile, nostalgic feel.`,
+        media: mediaImages(26, "png"),
+      },
+      {
+        title: "Bilingualism Editorial",
+        slug: "bilingualism-editorial",
+        date: "2026",
+        description: `This project explores bilingualism through an 8.5” x 11” magazine feature examining how language shapes identity, culture, relationships, and belonging. Inspired by my own experiences growing up in Qatar and later hearing different languages spoken in my workplace, I explored the contrast between feeling connected through language and feeling excluded when you cannot understand a conversation. Through research, writing, and editorial design, I developed a feature titled Surrounded by Words, Separated by Lughah, exploring topics such as code-switching, cultural identity, language barriers, and the importance of linguistic inclusion. The editorial layout uses a custom grid system, contrasting typography, pull quotes, and carefully structured text to guide the reader through the story. The final publication combines personal reflection and research to highlight how language can bring people together while also creating distance.`,
+        media: mediaImages(13, "png"),
+      },
+      {
         title: "Mini Thesis",
         slug: "mini-thesis",
         date: "2026",
@@ -124,20 +138,6 @@ Aphelion is the point in the Earth's orbit or a celestial body where it is farth
             media: mediaImages(2, "jpg"),
           },
         ],
-      },
-      {
-        title: "Personal Branding Exercise",
-        slug: "personal-branding-exercise",
-        date: "2026",
-        description: `This project explores the development of a personal brand identity based on the personality, interests, and values of my partner, Jaimee Jara. Through a questionnaire and research process, I identified three key characteristics that define her: creative, kind, and nostalgic. These qualities inspired the creation of ROBUNI, an original brand name combining her love of vinyl records and bunnies. I developed a playful, organic wordmark using a modified typeface, incorporating a vinyl record into the letter “O” and a small bunny detail above the “i.” A soft green and cream colour palette further reflects her personality, while the proposed packaging takes inspiration from vintage record sleeves, using rounded shapes and uncoated paperboard to create a tactile, nostalgic feel.`,
-        media: mediaImages(26, "png"),
-      },
-      {
-        title: "Bilingualism Editorial",
-        slug: "bilingualism-editorial",
-        date: "2026",
-        description: `This project explores bilingualism and multilingualism through a magazine feature examining how language shapes identity, culture, relationships, and belonging. Inspired by my own experiences growing up in Qatar and later hearing different languages spoken in my workplace, I explored the contrast between feeling connected through language and feeling excluded when you cannot understand a conversation. Through research, writing, and editorial design, I developed a feature titled Surrounded by Words, Separated by Lughah, exploring topics such as code-switching, cultural identity, language barriers, and the importance of linguistic inclusion. The editorial layout uses a custom grid system, contrasting typography, pull quotes, and carefully structured text to guide the reader through the story. The final publication combines personal reflection and research to highlight how language can bring people together while also creating distance.`,
-        media: mediaImages(13, "png"),
       },
       {
         title: "3D Type - FIFA 26",
