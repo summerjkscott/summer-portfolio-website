@@ -53,43 +53,10 @@ function buildSidebarNav() {
   bindHomeLink();
 }
 
-function setMobileMenuOpen(isOpen) {
-  const sidebar = document.querySelector(".sidebar");
-  const btn = document.querySelector(".sidebar__menu-btn");
-  if (!sidebar || !btn) return;
-
-  sidebar.classList.toggle("is-open", isOpen);
-  document.body.classList.toggle("menu-open", isOpen);
-  btn.setAttribute("aria-expanded", String(isOpen));
-  const label = btn.querySelector(".sidebar__menu-btn-text");
-  if (label) label.textContent = isOpen ? "Close" : "Menu";
-}
-
-function closeMobileMenu() {
-  setMobileMenuOpen(false);
-}
-
-function initMobileMenu() {
-  const sidebar = document.querySelector(".sidebar");
-  const btn = document.querySelector(".sidebar__menu-btn");
-  if (!sidebar || !btn) return;
-
-  btn.addEventListener("click", () => {
-    setMobileMenuOpen(!sidebar.classList.contains("is-open"));
-  });
-
-  window.addEventListener("resize", () => {
-    if (window.matchMedia("(min-width: 769px)").matches) {
-      closeMobileMenu();
-    }
-  });
-}
-
 function bindHomeLink() {
   document.querySelectorAll("[data-home-link]").forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
-      closeMobileMenu();
       window.location.hash = "";
     });
   });
@@ -253,7 +220,7 @@ function renderHome() {
         <svg
           class="home__bee-trail"
           viewBox="0 0 1000 180"
-          preserveAspectRatio="none"
+          preserveAspectRatio="xMidYMid meet"
           aria-hidden="true"
           focusable="false"
         >
@@ -471,16 +438,11 @@ function bindNavEvents() {
   document.querySelectorAll(".nav__link").forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
-      closeMobileMenu();
       window.location.hash = `/${link.dataset.category}/${link.dataset.slug}`;
     });
   });
 }
 
 buildSidebarNav();
-initMobileMenu();
-window.addEventListener("hashchange", () => {
-  closeMobileMenu();
-  route();
-});
+window.addEventListener("hashchange", route);
 route();

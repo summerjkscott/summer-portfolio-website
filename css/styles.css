@@ -92,10 +92,6 @@ body {
   overflow-x: hidden;
 }
 
-body.menu-open {
-  overflow: hidden;
-}
-
 .layout {
   display: flex;
   min-height: 100vh;
@@ -117,21 +113,10 @@ body.menu-open {
   gap: 1.35rem;
 }
 
-.sidebar__header {
+.sidebar__top {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  width: 100%;
-}
-
-.sidebar__menu-btn {
-  display: none;
-}
-
-.sidebar__drawer {
-  display: flex;
-  flex-direction: column;
-  gap: 1.35rem;
   width: 100%;
 }
 
@@ -403,16 +388,18 @@ body.menu-open {
 
 .home__intro {
   position: relative;
-  height: 10rem;
-  margin: 0 auto 3rem;
   width: 100%;
+  aspect-ratio: 1000 / 180;
+  height: auto;
+  max-height: 10rem;
+  margin: 0 auto 3rem;
   overflow: visible;
 }
 
 .home__bee-trail {
   position: absolute;
-  inset: 0 auto auto -4.5rem;
-  width: min(calc(100% - 2rem), 1000px);
+  inset: 0;
+  width: 100%;
   height: 100%;
   overflow: visible;
 }
@@ -1106,139 +1093,30 @@ body.lightbox-open {
   }
 
   .sidebar {
-    position: sticky;
-    top: 0;
+    position: relative;
     inset: auto;
     width: 100%;
     max-height: none;
-    padding: 0.85rem 1rem;
-    padding-top: max(0.85rem, env(safe-area-inset-top));
+    padding: 1.25rem 1rem 1.5rem;
+    padding-top: max(1.25rem, env(safe-area-inset-top));
     padding-left: max(1rem, env(safe-area-inset-left));
     padding-right: max(1rem, env(safe-area-inset-right));
     border-right: none;
     border-bottom: 1px solid var(--rule);
-    gap: 0;
-    overflow: visible;
-  }
-
-  .sidebar__header {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-  }
-
-  .sidebar__intro {
-    align-items: flex-start;
-    text-align: left;
-    gap: 0.15rem;
-    min-width: 0;
+    gap: 1.15rem;
   }
 
   .sidebar__name {
-    font-size: 1.35rem;
-    line-height: 1;
-  }
-
-  .sidebar__name-link {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.35rem;
-    letter-spacing: 0.04em;
+    font-size: clamp(1.75rem, 9vw, 2.25rem);
   }
 
   .sidebar__role {
-    margin: 0;
-    font-size: 1rem;
-    letter-spacing: 0.08em;
-    text-align: left;
-  }
-
-  .sidebar__menu-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    flex-shrink: 0;
-    min-height: 2.75rem;
-    padding: 0.45rem 0.7rem;
-    border: 1px solid var(--black);
-    background: transparent;
-    color: var(--black);
-    font-family: var(--josefin);
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .sidebar__menu-btn-icon {
-    position: relative;
-    width: 1rem;
-    height: 0.75rem;
-  }
-
-  .sidebar__menu-btn-icon::before,
-  .sidebar__menu-btn-icon::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 1.5px;
-    background: currentColor;
-    transition: transform 0.2s ease, top 0.2s ease;
-  }
-
-  .sidebar__menu-btn-icon::before {
-    top: 0.1rem;
-    box-shadow: 0 0.28rem 0 currentColor;
-  }
-
-  .sidebar__menu-btn-icon::after {
-    top: 0.66rem;
-  }
-
-  .sidebar.is-open .sidebar__menu-btn-icon::before {
-    top: 0.38rem;
-    box-shadow: none;
-    transform: rotate(45deg);
-  }
-
-  .sidebar.is-open .sidebar__menu-btn-icon::after {
-    top: 0.38rem;
-    transform: rotate(-45deg);
-  }
-
-  .sidebar__drawer {
-    display: none;
-  }
-
-  .sidebar.is-open .sidebar__drawer {
-    position: fixed;
-    top: calc(3.75rem + env(safe-area-inset-top, 0px));
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 30;
-    display: flex;
-    flex-direction: column;
-    gap: 1.15rem;
-    padding: 1rem max(1rem, env(safe-area-inset-right))
-      max(1.25rem, env(safe-area-inset-bottom))
-      max(1rem, env(safe-area-inset-left));
-    background: #ffeec0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    font-size: 1.2rem;
   }
 
   .sidebar__photo-wrap {
-    width: min(9.5rem, 42vw);
-    margin: 0.25rem auto 0.35rem;
-  }
-
-  .sidebar__info {
-    margin: 0;
+    width: min(11rem, 55vw);
+    margin-inline: auto;
   }
 
   .nav__toggle {
@@ -1253,11 +1131,7 @@ body.lightbox-open {
   }
 
   .nav__panel.is-open {
-    max-height: none;
-  }
-
-  .nav__panel.is-open .nav__list {
-    max-height: min(50vh, 22rem);
+    max-height: min(70vh, 28rem);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
@@ -1279,17 +1153,20 @@ body.lightbox-open {
   }
 
   .home__intro {
-    height: 6.5rem;
+    aspect-ratio: 1000 / 180;
+    max-height: none;
+    height: auto;
     margin-bottom: 1.75rem;
   }
 
   .home__bee-trail {
-    inset: 0 auto auto -1rem;
-    width: calc(100% + 1rem);
+    inset: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .home__bee-trail-dashes {
-    stroke-width: 3;
+    stroke-width: 3.5;
   }
 
   .home__columns {
