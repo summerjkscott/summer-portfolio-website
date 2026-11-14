@@ -5,18 +5,36 @@ function mediaImages(count, ext = "jpg") {
   }));
 }
 
+/** GitHub Pages serves LFS pointer files, not real media — use the LFS CDN there. */
+const GITHUB_LFS_MEDIA_BASE =
+  "https://media.githubusercontent.com/media/summerjkscott/summer-portfolio-website/main";
+
 function getMediaBasePath(categorySlug, projectSlug) {
   return `assets/projects/${categorySlug}/${projectSlug}`;
 }
 
+function resolveMediaUrl(relativePath, file) {
+  const needsLfsCdn =
+    typeof location !== "undefined" &&
+    location.hostname.endsWith("github.io") &&
+    /\.(pdf)$/i.test(file);
+
+  if (needsLfsCdn) {
+    return `${GITHUB_LFS_MEDIA_BASE}/${relativePath}`;
+  }
+  return relativePath;
+}
+
 function getMediaSrc(categorySlug, projectSlug, file, sectionSlug = null) {
   if (projectSlug?.startsWith("gallery-")) {
-    return `assets/projects/${categorySlug}/${encodeURIComponent(file)}`;
+    const relative = `assets/projects/${categorySlug}/${encodeURIComponent(file)}`;
+    return resolveMediaUrl(relative, file);
   }
   const base = sectionSlug
     ? `${getMediaBasePath(categorySlug, projectSlug)}/${sectionSlug}`
     : getMediaBasePath(categorySlug, projectSlug);
-  return `${base}/${encodeURIComponent(file)}`;
+  const relative = `${base}/${encodeURIComponent(file)}`;
+  return resolveMediaUrl(relative, file);
 }
 
 function getProjectPreviewMedia(project) {
@@ -87,7 +105,7 @@ Aphelion is the point in the Earth's orbit or a celestial body where it is farth
             slug: "3d-mobile",
             description: `This mobile is inspired by the solar system and the ideas of aphelion and perihelion, far and close. I used those ideas to think about people at different points in life. The mobile uses pictures of my sister and I when we were young with our grandparents, showing the beginning and end of life. Just like the Earth moves closer and farther from the sun, the mobile shows the distance between being young and old. By using these family photos, I connected the idea of near and far in space to near and far in human life.`,
             media: [
-              { type: "video", file: "01.mov" },
+              { type: "video", file: "01.mp4" },
               { type: "image", file: "02.jpg" },
               { type: "image", file: "03.jpg" },
             ],
@@ -159,7 +177,7 @@ The final outcome took the form of a printed design kit, including a tri-fold br
 
 Collaborative members: Ayesha Thakur, Summer Scott, Xingyu Campbell, Tracey Chen, & Serina Chan`,
         media: [
-          { type: "video", file: "FINAL AR copy 2.mp4" },
+          { type: "video", file: "video.mp4" },
           { type: "image", file: "01.jpg" },
           { type: "image", file: "02.jpg" },
           { type: "image", file: "03.jpeg" },
@@ -395,7 +413,8 @@ function formatDescription(text) {
 }
 
 function getProjectDownloadSrc(categorySlug, projectSlug, file) {
-  return `${getMediaBasePath(categorySlug, projectSlug)}/${encodeURIComponent(file)}`;
+  const relative = `${getMediaBasePath(categorySlug, projectSlug)}/${encodeURIComponent(file)}`;
+  return resolveMediaUrl(relative, file);
 }
 
 function renderProjectDownload(category, project) {
