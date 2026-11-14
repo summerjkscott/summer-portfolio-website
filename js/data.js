@@ -140,6 +140,13 @@ Aphelion is the point in the Earth's orbit or a celestial body where it is farth
         ],
       },
       {
+        title: "Event Poster",
+        slug: "dallas-halloween",
+        date: "2026",
+        description: `This personal project involved creating a Halloween party poster for my sister to display on her front door. Inspired by the visual style of the Scream movie poster, I wanted to create a dark, suspenseful atmosphere using a deep red and black colour palette. The design features the iconic Ghostface mask from Scream as the central visual, paired with bold typography to create a dramatic focal point. I used contrasting type sizes and placement to establish hierarchy while incorporating subtle details such as “Enter if you dare” to enhance the horror-inspired theme. The final design combines cinematic inspiration with bold typography to create an eye-catching and atmospheric event poster.`,
+        media: mediaImages(1, "png"),
+      },
+      {
         title: "3D Type - FIFA 26",
         slug: "3d-type-fifa-26",
         date: "2026",
